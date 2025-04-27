@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+    
+    environment {
+        REGISTRY = "<your-acr-name>.azurecr.io"
+        IMAGE_NAME = "python-app"
+        IMAGE_TAG = "latest"
+        ACR_PASSWORD = credentials('acr-password') // store the password in Jenkins credentials
+        ACR_USERNAME = credentials('acr-username') // store the username in Jenkins credentials
+        KUBECONFIG = credentials('kubeconfig') // store kubeconfig as Jenkins credentials
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/your-github-username/your-python-app-repo.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh 'docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .'
+                }
+            }
+        }
+
+        stage('Login to ACR') {
+            steps {
+                script {
+                    sh 'echo $ACR_PASSWORD | docker login $REGISTRY -u $ACR_USERNAME --password-stdin'
+                }
+            }
+        }
+
+        stage('Push to ACR') {
+            steps {
+                script {
+                    sh 'docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG'
+                }
+            }
+        }
+
+        stage('Deploy to AKS') {
+            steps {
+                script {
+                    // You can configure the AKS deployment using kubectl
+                    sh 'kubectl apply -f deployment.yaml --kubeconfig $KUBECONFIG'
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Deployment completed successfully!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}
