@@ -1,37 +1,33 @@
-param location string
-param aksClusterName string
-param nodeCount int   // Defaulting to 2
-param subnetId string
+// modules/aks.bicep
 
-resource aks 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
+param location string
+param resourceGroupId string
+param aksClusterName string
+param subnetId string
+param aksNodeCount int
+param aksVmSize string
+
+resource aksCluster 'Microsoft.ContainerService/managedClusters@2021-03-01' = {
   name: aksClusterName
   location: location
-  identity: {
-    type: 'SystemAssigned'
-  }
   properties: {
-    dnsPrefix: '${aksClusterName}-dns'
+    dnsPrefix: aksClusterName
     agentPoolProfiles: [
       {
-        name: 'nodepool1'
-        count: nodeCount  
-        vmSize: 'Standard_D2s_v3'  
+        name: 'agentpool'
+        count: aksNodeCount
+        vmSize: aksVmSize
         osType: 'Linux'
-        type: 'VirtualMachineScaleSets'
-        mode: 'System'
         vnetSubnetID: subnetId
       }
     ]
-    networkProfile: {
-      networkPlugin: 'azure'
-    }
-    addonProfiles: {
-      kubeDashboard: {
-        enabled: false
-      }
-      omsagent: {
-        enabled: false
-      }
-    }
+    enableRBAC: true
+  }
+  tags: {
+    owner: 'Venkata.Sai@neudesic.com'   
   }
 }
+
+output aksClusterId string = aksCluster.id
+output aksFqdn string = aksCluster.properties.fqdn
+
