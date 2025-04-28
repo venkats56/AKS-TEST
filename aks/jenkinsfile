@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    environment {
+        AZURE_CREDENTIALS_ID = 'your-jenkins-azure-service-connection-id' // Jenkins Azure credentials ID
+        AZURE_SUBSCRIPTION_ID = 'your-azure-subscription-id'
+        RESOURCE_GROUP = 'your-resource-group-name'
+        DEPLOYMENT_NAME = 'your-deployment-name'
+        BICEP_FILE = 'path/to/main.bicep'  // Path inside your GitHub repo
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/your-org/your-repo.git'
+            }
+        }
+
+        stage('Login to Azure') {
+            steps {
+                withCredentials([azureServicePrincipal(AZURE_CREDENTIALS_ID)]) {
+                    sh '''
+                        az login --service-principal \
+                            --username $AZURE_CLIENT_ID \
+                            --password $AZURE_CLIENT_SECRET \
+                            --tenant $AZURE_TENANT_ID
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Bicep') {
+            steps {
+                sh '''
+                    az account set --subscription $AZURE_SUBSCRIPTION_ID
+
+                    az deployment group create \
+                        --resource-group $RESOURCE_GROUP \
+                        --name $DEPLOYMENT_NAME \
+                        --template-file $BICEP_FILE
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
