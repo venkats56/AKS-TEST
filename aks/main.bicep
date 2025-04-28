@@ -14,9 +14,11 @@ module networkModule './modules/network.bicep' = {
 module aksModule './modules/aks.bicep' = {
   name: 'deployAKS'
   params: {
-    location: variablesModule.outputs.location
-    aksClusterName: variablesModule.outputs.aksClusterName
-    nodeCount: variablesModule.outputs.nodeCount
-    subnetId: networkModule.outputs.subnetId 
+    location: location
+    aksClusterName: aksClusterName
+    subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, subnetName)
+    aksNodeCount: aksNodeCount
+    aksVmSize: aksVmSize
   }
 }
+
