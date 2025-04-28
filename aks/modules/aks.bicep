@@ -1,7 +1,6 @@
 // modules/aks.bicep
 
 param location string
-param resourceGroupId string
 param aksClusterName string
 param subnetId string
 param aksNodeCount int
@@ -24,10 +23,11 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2021-03-01' = {
     enableRBAC: true
   }
   tags: {
-    owner: 'Venkata.Sai@neudesic.com'   
+    owner: 'Venkata.Sai@neudesic.com'
   }
 }
 
 output aksClusterId string = aksCluster.id
 output aksFqdn string = aksCluster.properties.fqdn
+
 
