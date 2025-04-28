@@ -2,19 +2,14 @@ pipeline {
     agent any
 
     environment {
-        AZURE_CREDENTIALS_ID = 'your-jenkins-azure-service-connection-id' // Jenkins Azure credentials ID
-        AZURE_SUBSCRIPTION_ID = 'your-azure-subscription-id'
-        RESOURCE_GROUP = 'your-resource-group-name'
-        DEPLOYMENT_NAME = 'your-deployment-name'
-        BICEP_FILE = 'path/to/main.bicep'  // Path inside your GitHub repo
+        AZURE_CREDENTIALS_ID = '9f37f950-6239-483d-9223-a1c7a1b0f3e7' // Jenkins Azure credentials ID
+        AZURE_SUBSCRIPTION_ID = '9d160b65-2e55-4165-ad1d-569fc4b41668'
+        RESOURCE_GROUP = 'Venkat_POC'
+        DEPLOYMENT_NAME = 'test'
+        BICEP_FILE = 'aks/main.bicep'  
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/your-org/your-repo.git'
-            }
-        }
 
         stage('Login to Azure') {
             steps {
