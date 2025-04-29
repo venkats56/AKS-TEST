@@ -18,8 +18,8 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Clone the repository with the Python app source code
-                git 'https://github.com/your-github-username/your-python-app-repo.git'
+                // Clone the repository with the Python app source code (public repo, no authentication needed)
+                git 'https://github.com/venkats56/AKS-TEST.git'
             }
         }
 
