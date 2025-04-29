@@ -73,8 +73,11 @@ pipeline {
 
         stage('Post Actions') {
             steps {
-                script {
-                    echo "Pipeline completed!"
+                node {
+                    script {
+                        echo "Pipeline completed!"
+                        cleanWs()  // Clean workspace after the job inside the node block
+                    }
                 }
             }
         }
@@ -88,11 +91,8 @@ pipeline {
         failure {
             echo "Deployment failed!"
         }
-
-        always {
-            cleanWs()  // Clean workspace after the job
-        }
     }
 }
+
 
 
