@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        REGISTRY = "<your-acr-name>.azurecr.io"
+        REGISTRY = "testacr2568.azurecr.io"
         IMAGE_NAME = "python-app"
         IMAGE_TAG = "latest"
         ACR_PASSWORD = credentials('acr-password') // store the password in Jenkins credentials
