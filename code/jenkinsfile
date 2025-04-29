@@ -27,11 +27,12 @@ pipeline {
             steps {
                 script {
                     // Authenticate with Azure using the Service Principal credentials
-                    withCredentials([usernamePassword(credentialsId: 'dcfc0f66-bb29-42c0-ade7-403f79c713dd', 
-                                                       usernameVariable: 'SP_APP_ID', 
-                                                       passwordVariable: 'SP_SECRET')]) {
+                    withCredentials([[$class: 'AzureServicePrincipal', 
+                                      clientIdVariable: 'SP_CLIENT_ID', 
+                                      clientSecretVariable: 'SP_SECRET', 
+                                      tenantIdVariable: 'SP_TENANT_ID']]) {
                         sh '''
-                            az login --service-principal -u $SP_APP_ID -p $SP_SECRET --tenant $AZURE_SP_TENANT_ID
+                            az login --service-principal -u $SP_CLIENT_ID -p $SP_SECRET --tenant $SP_TENANT_ID
                         '''
                     }
                 }
@@ -84,4 +85,5 @@ pipeline {
         }
     }
 }
+
 
