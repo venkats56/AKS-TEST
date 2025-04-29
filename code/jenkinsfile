@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     environment {
         REGISTRY = "testacr2568.azurecr.io"        // Azure Container Registry URL
         IMAGE_NAME = "python-app"                  // Docker image name
@@ -74,7 +74,7 @@ pipeline {
             }
         }
     }
-    
+
     post {
         success {
             echo 'Deployment completed successfully!'  // Success message
@@ -84,3 +84,4 @@ pipeline {
         }
     }
 }
+
