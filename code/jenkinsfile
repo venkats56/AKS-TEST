@@ -2,24 +2,46 @@ pipeline {
     agent any
     
     environment {
-        REGISTRY = "testacr2568.azurecr.io"
-        IMAGE_NAME = "python-app"
-        IMAGE_TAG = "latest"
-        ACR_PASSWORD = credentials('acr-password') // store the password in Jenkins credentials
-        ACR_USERNAME = credentials('acr-username') // store the username in Jenkins credentials
-        KUBECONFIG = credentials('kubeconfig') // store kubeconfig as Jenkins credentials
+        REGISTRY = "testacr2568.azurecr.io"        // Azure Container Registry URL
+        IMAGE_NAME = "python-app"                  // Docker image name
+        IMAGE_TAG = "latest"                       // Docker image tag
+        
+        // Credentials
+        ACR_USERNAME = credentials('1207949c-1f9a-41e2-9f0e-091916bf4862')  // ACR username credential ID
+        ACR_PASSWORD = credentials('1207949c-1f9a-41e2-9f0e-091916bf4862')  // ACR password credential ID
+        AZURE_SP_CLIENT_ID = credentials('dcfc0f66-bb29-42c0-ade7-403f79c713dd') // Azure Service Principal Client ID
+        AZURE_SP_TENANT_ID = credentials('dcfc0f66-bb29-42c0-ade7-403f79c713dd') // Azure Service Principal Tenant ID
+        AZURE_SP_CLIENT_SECRET = credentials('dcfc0f66-bb29-42c0-ade7-403f79c713dd') // Azure Service Principal Client Secret
+        KUBECONFIG = credentials('ab9304cd-4a66-4325-bf22-d5e54ddcf9af')       // Kubeconfig for AKS access
     }
 
     stages {
         stage('Clone Repository') {
             steps {
+                // Clone the repository with the Python app source code
                 git 'https://github.com/your-github-username/your-python-app-repo.git'
+            }
+        }
+
+        stage('Login to Azure') {
+            steps {
+                script {
+                    // Authenticate with Azure using the Service Principal credentials
+                    withCredentials([usernamePassword(credentialsId: 'dcfc0f66-bb29-42c0-ade7-403f79c713dd', 
+                                                       usernameVariable: 'SP_APP_ID', 
+                                                       passwordVariable: 'SP_SECRET')]) {
+                        sh '''
+                            az login --service-principal -u $SP_APP_ID -p $SP_SECRET --tenant $AZURE_SP_TENANT_ID
+                        '''
+                    }
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Build the Docker image using the Dockerfile
                     sh 'docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .'
                 }
             }
@@ -28,6 +50,7 @@ pipeline {
         stage('Login to ACR') {
             steps {
                 script {
+                    // Log in to Azure Container Registry using Jenkins credentials
                     sh 'echo $ACR_PASSWORD | docker login $REGISTRY -u $ACR_USERNAME --password-stdin'
                 }
             }
@@ -36,6 +59,7 @@ pipeline {
         stage('Push to ACR') {
             steps {
                 script {
+                    // Push the Docker image to Azure Container Registry
                     sh 'docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG'
                 }
             }
@@ -44,12 +68,23 @@ pipeline {
         stage('Deploy to AKS') {
             steps {
                 script {
-                    // You can configure the AKS deployment using kubectl
+                    // Deploy the image to Azure Kubernetes Service using kubectl and the kubeconfig
                     sh 'kubectl apply -f deployment.yaml --kubeconfig $KUBECONFIG'
                 }
             }
         }
     }
+    
+    post {
+        success {
+            echo 'Deployment completed successfully!'  // Success message
+        }
+        failure {
+            echo 'Deployment failed!'  // Failure message
+        }
+    }
+}
+
     
     post {
         success {
